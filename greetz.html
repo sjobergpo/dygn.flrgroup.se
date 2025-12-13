@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Christmas Demo 2025 - POSEIDON</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap');
+
+```
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+    
+    body {
+        background: #000;
+        overflow: hidden;
+        font-family: 'VT323', monospace;
+    }
+    
+    canvas {
+        display: block;
+    }
+    
+    #overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        background: 
+            repeating-linear-gradient(
+                0deg,
+                rgba(0, 0, 0, 0.15) 0px,
+                rgba(0, 0, 0, 0.15) 1px,
+                transparent 1px,
+                transparent 3px
+            );
+        z-index: 100;
+    }
+    
+    #startScreen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: #000;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 200;
+        cursor: pointer;
+    }
+    
+    #startScreen h1 {
+        font-family: 'Press Start 2P', cursive;
+        color: #ff0000;
+        font-size: 20px;
+        text-shadow: 0 0 10px #ff0000, 0 0 20px #ff0000;
+        animation: pulse 1s ease-in-out infinite;
+        margin-bottom: 20px;
+        text-align: center;
+        line-height: 1.8;
+    }
+    
+    #startScreen .presents {
+        font-family: 'Press Start 2P', cursive;
+        color: #ffdd00;
+        font-size: 14px;
+        margin-bottom: 40px;
+    }
+    
+    #startScreen p {
+        font-family: 'VT323', monospace;
+        color: #00ff00;
+        font-size: 28px;
+        animation: blink 0.8s ease-in-out infinite;
+    }
+    
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+    
+    @keyframes blink {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.3; }
+    }
+</style>
+```
+
+</head>
+<body>
+    <div id="startScreen">
+        <h1>★ POSEIDON ★<br>CHRISTMAS DEMO 2025</h1>
+        <div class="presents">- presents -</div>
+        <p>[ CLICK TO START ]</p>
+    </div>
+    <canvas id="demo"></canvas>
+    <div id="overlay"></div>
+
+```
+<script>
+    const canvas = document.getElementById('demo');
+    const ctx = canvas.getContext('2d');
+    const startScreen = document.getElementById('startScreen');
+    
+    let width, height;
+    let time = 0;
+    let audioStarted = false;
+    let audioCtx;
+    
+    // Snowflakes
+    const snowflakes = [];
+    const snowChars = ['*', '❄', '✦', '·', '•', '°', '✧'];
+    
+    // Large ASCII Banner
+    const bannerText = "HAPPY HOLIDAYS FROM OUR FAMILY TO YOURS // POSEIDON";
+    
+    // ASCII art letters for the big banner
+    const bigLetters = {
+        'H': [
+            "█   █",
+            "█   █",
+            "█████",
+            "█   █",
+            "█   █"
+        ],
+        'A': [
+            " ███ ",
+            "█   █",
+            "█████",
+            "█   █",
+            "█   █"
+        ],
+        'P': [
+            "████ ",
+            "█   █",
+            "████ ",
+            "█    ",
+            "█    "
+        ],
+        'Y': [
+            "█   █",
+            " █ █ ",
+            "  █  ",
+            "  █  ",
+            "  █  "
+        ],
+        'O': [
+            " ███ ",
+            "█   █",
+            "█   █",
+            "█   █",
+            " ███ "
+        ],
+        'L': [
+            "█    ",
+            "█    ",
+            "█    ",
+            "█    ",
+            "█████"
+        ],
+        'I': [
+            "█████",
+            "  █  ",
+            "  █  ",
+            "  █  ",
+            "█████"
+        ],
+        'D': [
+            "████ ",
+            "█   █",
+            "█   █",
+            "█   █",
+            "████ "
+        ],
+        'S': [
+            " ████",
+            "█    ",
+            " ███ ",
+            "    █",
+            "████ "
+        ],
+        'F': [
+            "█████",
+            "█    ",
+            "████ ",
+            "█    ",
+            "█    "
+        ],
+        'R': [
+            "████ ",
+            "█   █",
+            "████ ",
+            "█  █ ",
+            "█   █"
+        ],
+        'M': [
+            "█   █",
+            "██ ██",
+            "█ █ █",
+            "█   █",
+            "█   █"
+        ],
+        'U': [
+            "█   █",
+            "█   █",
+            "█   █",
+            "█   █",
+            " ███ "
+        ],
+        'T': [
+            "█████",
+            "  █  ",
+            "  █  ",
+            "  █  ",
+            "  █  "
+        ],
+        'N': [
+            "█   █",
+            "██  █",
+            "█ █ █",
+            "█  ██",
+            "█   █"
+        ],
+        'E': [
+            "█████",
+            "█    ",
+            "████ ",
+            "█    ",
+            "█████"
+        ],
+        'B': [
+            "████ ",
+            "█   █",
+            "████ ",
+            "█   █",
+            "████ "
+        ],
+        'C': [
+            " ████",
+            "█    ",
+            "█    ",
+            "█    ",
+            " ████"
+        ],
+        'G': [
+            " ████",
+            "█    ",
+            "█  ██",
+            "█   █",
+            " ████"
+        ],
+        'J': [
+            "█████",
+            "   █ ",
+            "   █ ",
+            "█  █ ",
+            " ██  "
+        ],
+        'K': [
+            "█   █",
+            "█  █ ",
+            "███  ",
+            "█  █ ",
+            "█   █"
+        ],
+        'Q': [
+            " ███ ",
+            "█   █",
+            "█   █",
+            "█  █ ",
+            " ██ █"
+        ],
+        'V': [
+            "█   █",
+            "█   █",
+            "█   █",
+            " █ █ ",
+            "  █  "
+        ],
+        'W': [
+            "█   █",
+            "█   █",
+            "█ █ █",
+            "██ ██",
+            "█   █"
+        ],
+        'X': [
+            "█   █",
+            " █ █ ",
+            "  █  ",
+            " █ █ ",
+            "█   █"
+        ],
+        'Z': [
+            "█████",
+            "   █ ",
+            "  █  ",
+            " █   ",
+            "█████"
+        ],
+        '/': [
+            "    █",
+            "   █ ",
+            "  █  ",
+            " █   ",
+            "█    "
+        ],
+        ' ': [
+            "     ",
+            "     ",
+            "     ",
+            "     ",
+            "     "
+        ]
+    };
+    
+    // ASCII Santa Claus
+    const santa = [
+        "            ▄▄▄▄▄▄▄▄            ",
+        "         ▄██░░░░░░░░██▄         ",
+        "        ██░░░░░░░░░░░░██        ",
+        "       ██░░██░░░░░░██░░██       ",
+        "       ██░░██░░░░░░██░░██       ",
+        "       ██░░░░░░░░░░░░░░██       ",
+        "        ██░░░░▄▄░░░░░░██        ",
+        "         ██░░░░░░░░░░██         ",
+        "      ▄▄▄▄██▄▄▄▄▄▄▄▄██▄▄▄▄      ",
+        "     █▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓█     ",
+        "    █▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓█    ",
+        "    █▓▓██████████████████▓▓█    ",
+        "   █▓▓██                ██▓▓█   ",
+        "   █▓▓██  ████████████  ██▓▓█   ",
+        "   █▓▓██  ██▒▒▒▒▒▒▒▒██  ██▓▓█   ",
+        "   █▓▓██  ██▒▒▒▒▒▒▒▒██  ██▓▓█   ",
+        "   █▓▓██  ██▒▒▒▒▒▒▒▒██  ██▓▓█   ",
+        "    █▓▓██ ██▒▒▒▒▒▒▒▒██ ██▓▓█    ",
+        "    █▓▓██  ██████████  ██▓▓█    ",
+        "     █▓▓██            ██▓▓█     ",
+        "      ████████████████████      ",
+        "          ████    ████          ",
+        "         ██░░██  ██░░██         ",
+        "         ██████  ██████         "
+    ];
+    
+    // Color palettes
+    const colors = {
+        red: '#ff3333',
+        green: '#33ff33',
+        gold: '#ffdd00',
+        white: '#ffffff',
+        blue: '#3399ff',
+        pink: '#ff66aa'
+    };
+    
+    function resize() {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+    }
+    
+    function initSnowflakes() {
+        snowflakes.length = 0;
+        for (let i = 0; i < 150; i++) {
+            snowflakes.push({
+                x: Math.random() * width,
+                y: Math.random() * height,
+                char: snowChars[Math.floor(Math.random() * snowChars.length)],
+                speed: 0.5 + Math.random() * 2,
+                size: 10 + Math.random() * 20,
+                wobble: Math.random() * Math.PI * 2,
+                wobbleSpeed: 0.02 + Math.random() * 0.03
+            });
+        }
+    }
+    
+    function drawSnowflakes() {
+        ctx.save();
+        snowflakes.forEach(flake => {
+            const wobbleX = Math.sin(flake.wobble) * 30;
+            ctx.font = `${flake.size}px VT323`;
+            ctx.fillStyle = `rgba(255, 255, 255, ${0.3 + Math.random() * 0.4})`;
+            ctx.fillText(flake.char, flake.x + wobbleX, flake.y);
+            
+            flake.y += flake.speed;
+            flake.wobble += flake.wobbleSpeed;
+            
+            if (flake.y > height + 20) {
+                flake.y = -20;
+                flake.x = Math.random() * width;
+            }
+        });
+        ctx.restore();
+    }
+    
+    function drawPlasmaBackground() {
+        const imageData = ctx.createImageData(width, height);
+        const data = imageData.data;
+        
+        for (let y = 0; y < height; y += 4) {
+            for (let x = 0; x < width; x += 4) {
+                const v1 = Math.sin((x * 0.01) + time);
+                const v2 = Math.sin((y * 0.01) + time * 0.5);
+                const v3 = Math.sin((x * 0.01 + y * 0.01) + time * 0.7);
+                const v4 = Math.sin(Math.sqrt((x - width/2) * (x - width/2) + (y - height/2) * (y - height/2)) * 0.02 + time);
+                
+                const v = (v1 + v2 + v3 + v4) / 4;
+                
+                const r = Math.floor((Math.sin(v * Math.PI) * 0.5 + 0.5) * 50);
+                const g = Math.floor((Math.sin(v * Math.PI + 2) * 0.5 + 0.5) * 30);
+                const b = Math.floor((Math.sin(v * Math.PI + 4) * 0.5 + 0.5) * 60);
+                
+                for (let dy = 0; dy < 4 && y + dy < height; dy++) {
+                    for (let dx = 0; dx < 4 && x + dx < width; dx++) {
+                        const idx = ((y + dy) * width + (x + dx)) * 4;
+                        data[idx] = r;
+                        data[idx + 1] = g;
+                        data[idx + 2] = b;
+                        data[idx + 3] = 255;
+                    }
+                }
+            }
+        }
+        
+        ctx.putImageData(imageData, 0, 0);
+    }
+    
+    function drawBigBanner() {
+        const text = "HAPPY HOLIDAYS FROM OUR FAMILY TO YOURS // POSEIDON     ★★★     ";
+        const charWidth = 6;
+        const charHeight = 5;
+        const scale = 3;
+        const spacing = 2;
+        const totalCharWidth = (charWidth + spacing) * scale;
+        
+        const scrollSpeed = 80;
+        const totalWidth = text.length * totalCharWidth;
+        const scrollOffset = (time * scrollSpeed) % totalWidth;
+        
+        const yBase = height / 2 - (charHeight * scale) / 2;
+        
+        ctx.save();
+        
+        for (let i = 0; i < text.length; i++) {
+            const char = text[i].toUpperCase();
+            const letter = bigLetters[char] || bigLetters[' '];
+            
+            const xBase = i * totalCharWidth - scrollOffset + width;
+            
+            // Only draw if on screen
+            if (xBase > -totalCharWidth && xBase < width + totalCharWidth) {
+                // Sine wave displacement
+                const sineOffset = Math.sin((xBase * 0.008) + time * 2) * 40;
+                
+                // Color cycling
+                const hue = (i * 15 + time * 80) % 360;
+                const colorPhase = Math.floor(time * 2 + i * 0.3) % 3;
+                const bannerColors = ['#ff0000', '#00ff00', '#ffdd00'];
+                
+                for (let row = 0; row < charHeight; row++) {
+                    for (let col = 0; col < letter[row].length; col++) {
+                        if (letter[row][col] === '█') {
+                            const px = xBase + col * scale;
+                            const py = yBase + row * scale + sineOffset;
+                            
+                            // Gradient effect per character
+                            ctx.fillStyle = bannerColors[colorPhase];
+                            ctx.shadowColor = bannerColors[colorPhase];
+                            ctx.shadowBlur = 15;
+                            
+                            ctx.fillRect(px, py, scale - 1, scale - 1);
+                        }
+                    }
+                }
+            }
+        }
+        
+        ctx.restore();
+    }
+    
+    function drawSineScroller() {
+        const scrollText = "★ POSEIDON WISHES YOU A WONDERFUL HOLIDAY SEASON ★ MERRY CHRISTMAS AND HAPPY NEW YEAR 2025 ★ GREETS TO ALL DEMOSCENERS ★ ";
+        const scrollSpeed = 2;
+        const scrollOffset = (time * 60 * scrollSpeed) % (scrollText.length * 40);
+        
+        ctx.save();
+        ctx.font = '36px VT323';
+        
+        for (let i = 0; i < scrollText.length; i++) {
+            const char = scrollText[i];
+            const x = i * 28 - scrollOffset + width;
+            
+            if (x > -40 && x < width + 40) {
+                const sineY = Math.sin((x * 0.025) + time * 4) * 30;
+                const y = height - 60 + sineY;
+                
+                const hue = (i * 12 + time * 120) % 360;
+                ctx.fillStyle = `hsl(${hue}, 100%, 60%)`;
+                ctx.shadowColor = `hsl(${hue}, 100%, 50%)`;
+                ctx.shadowBlur = 10;
+                
+                ctx.fillText(char, x, y);
+            }
+        }
+        ctx.restore();
+    }
+    
+    function drawSanta() {
+        const santaX = width / 2;
+        const santaY = height / 2 - 100;
+        const charSize = 14;
+        
+        ctx.save();
+        ctx.font = `${charSize}px monospace`;
+        ctx.textAlign = 'left';
+        
+        santa.forEach((line, idx) => {
+            const y = santaY + idx * (charSize - 1);
+            const lineWidth = line.length * charSize * 0.6;
+            const startX = santaX - lineWidth / 2;
+            
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                const x = startX + i * (charSize * 0.6);
+                
+                if (char === ' ') continue;
+                
+                // Color mapping
+                if (char === '█' || char === '▄' || char === '▓') {
+                    // Red suit
+                    ctx.fillStyle = '#dd0000';
+                    ctx.shadowColor = '#ff0000';
+                    ctx.shadowBlur = 8;
+                } else if (char === '░') {
+                    // Skin/face
+                    ctx.fillStyle = '#ffccaa';
+                    ctx.shadowBlur = 0;
+                } else if (char === '▒') {
+                    // Belt/details
+                    ctx.fillStyle = '#ffdd00';
+                    ctx.shadowColor = '#ffdd00';
+                    ctx.shadowBlur = 5;
+                } else {
+                    // White fur trim
+                    ctx.fillStyle = '#ffffff';
+                    ctx.shadowColor = '#ffffff';
+                    ctx.shadowBlur = 10;
+                }
+                
+                ctx.fillText(char, x, y);
+            }
+        });
+        
+        // Draw "HO HO HO" above Santa
+        ctx.font = 'bold 28px "Press Start 2P", cursive';
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#ffffff';
+        ctx.shadowColor = '#ff0000';
+        ctx.shadowBlur = 15;
+        
+        const hoText = "HO HO HO!";
+        const bounce = Math.sin(time * 4) * 10;
+        ctx.fillText(hoText, santaX, santaY - 40 + bounce);
+        
+        ctx.restore();
+    }
+    
+    function drawStarfield() {
+        ctx.save();
+        const numStars = 60;
+        
+        for (let i = 0; i < numStars; i++) {
+            const angle = (i / numStars) * Math.PI * 2 + time * 0.15;
+            const dist = 50 + (time * 80 + i * 15) % 500;
+            const x = width / 2 + Math.cos(angle) * dist;
+            const y = height / 2 + Math.sin(angle) * dist * 0.6;
+            
+            const alpha = Math.max(0, 1 - (dist / 500));
+            
+            ctx.font = '16px VT323';
+            ctx.fillStyle = `rgba(255, 255, 200, ${alpha})`;
+            ctx.fillText('✦', x, y);
+        }
+        ctx.restore();
+    }
+    
+    // 8-bit Techno Jingle Bells
+    function initAudio() {
+        if (audioStarted) return;
+        audioStarted = true;
+        
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        const BPM = 140;
+        const beatTime = 60 / BPM;
+        const barTime = beatTime * 4;
+        
+        // Note frequencies
+        const notes = {
+            'C3': 130.81, 'D3': 146.83, 'E3': 164.81, 'F3': 174.61, 'G3': 196.00, 'A3': 220.00, 'B3': 246.94,
+            'C4': 261.63, 'D4': 293.66, 'E4': 329.63, 'F4': 349.23, 'G4': 392.00, 'A4': 440.00, 'B4': 493.88,
+            'C5': 523.25, 'D5': 587.33, 'E5': 659.25
+        };
+        
+        // Jingle Bells melody (techno arrangement)
+        const melody = [
+            // Bar 1-2: "Jingle bells, jingle bells"
+            { note: 'E4', start: 0, duration: 0.5 },
+            { note: 'E4', start: 0.5, duration: 0.5 },
+            { note: 'E4', start: 1, duration: 1 },
+            { note: 'E4', start: 2, duration: 0.5 },
+            { note: 'E4', start: 2.5, duration: 0.5 },
+            { note: 'E4', start: 3, duration: 1 },
+            // Bar 3-4: "Jingle all the way"
+            { note: 'E4', start: 4, duration: 0.5 },
+            { note: 'G4', start: 4.5, duration: 0.5 },
+            { note: 'C4', start: 5, duration: 0.75 },
+            { note: 'D4', start: 5.75, duration: 0.25 },
+            { note: 'E4', start: 6, duration: 2 },
+            // Bar 5-6: "Oh what fun"
+            { note: 'F4', start: 8, duration: 0.5 },
+            { note: 'F4', start: 8.5, duration: 0.5 },
+            { note: 'F4', start: 9, duration: 0.75 },
+            { note: 'F4', start: 9.75, duration: 0.25 },
+            { note: 'F4', start: 10, duration: 0.5 },
+            { note: 'E4', start: 10.5, duration: 0.5 },
+            { note: 'E4', start: 11, duration: 0.5 },
+            { note: 'E4', start: 11.5, duration: 0.25 },
+            { note: 'E4', start: 11.75, duration: 0.25 },
+            // Bar 7-8: "it is to ride"
+            { note: 'E4', start: 12, duration: 0.5 },
+            { note: 'D4', start: 12.5, duration: 0.5 },
+            { note: 'D4', start: 13, duration: 0.5 },
+            { note: 'E4', start: 13.5, duration: 0.5 },
+            { note: 'D4', start: 14, duration: 1 },
+            { note: 'G4', start: 15, duration: 1 },
+        ];
+        
+        // Bass line (techno style)
+        const bassPattern = [
+            { note: 'C3', start: 0, duration: 0.25 },
+            { note: 'C3', start: 0.5, duration: 0.25 },
+            { note: 'C3', start: 1, duration: 0.25 },
+            { note: 'C3', start: 1.5, duration: 0.25 },
+            { note: 'G3', start: 2, duration: 0.25 },
+            { note: 'G3', start: 2.5, duration: 0.25 },
+            { note: 'G3', start: 3, duration: 0.25 },
+            { note: 'G3', start: 3.5, duration: 0.25 },
+        ];
+        
+        // Kick drum pattern - four on the floor
+        const kickPattern = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
+        
+        // Hi-hat pattern (offbeats for techno feel)
+        const hihatPattern = [0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5, 10.5, 11.5, 12.5, 13.5, 14.5, 15.5];
+        
+        // Open hi-hat accents
+        const openHatPattern = [2, 6, 10, 14];
+        
+        // Arpeggio pattern
+        const arpNotes = ['C4', 'E4', 'G4', 'E4'];
+        
+        function createOscillator(freq, type, startTime, duration, volume = 0.1) {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            
+            osc.type = type;
+            osc.frequency.value = freq;
+            
+            gain.gain.setValueAtTime(volume, startTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+            
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            
+            osc.start(startTime);
+            osc.stop(startTime + duration + 0.1);
+        }
+        
+        function createKick(startTime) {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(150, startTime);
+            osc.frequency.exponentialRampToValueAtTime(40, startTime + 0.1);
+            
+            gain.gain.setValueAtTime(0.6, startTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.25);
+            
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            
+            osc.start(startTime);
+            osc.stop(startTime + 0.3);
+        }
+        
+        function createHihat(startTime, open = false) {
+            const bufferSize = audioCtx.sampleRate * (open ? 0.15 : 0.05);
+            const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+            const data = buffer.getChannelData(0);
+            
+            for (let i = 0; i < bufferSize; i++) {
+                data[i] = Math.random() * 2 - 1;
+            }
+            
+            const noise = audioCtx.createBufferSource();
+            const filter = audioCtx.createBiquadFilter();
+            const gain = audioCtx.createGain();
+            
+            noise.buffer = buffer;
+            filter.type = 'highpass';
+            filter.frequency.value = open ? 6000 : 9000;
+            
+            gain.gain.setValueAtTime(open ? 0.15 : 0.1, startTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, startTime + (open ? 0.15 : 0.05));
+            
+            noise.connect(filter);
+            filter.connect(gain);
+            gain.connect(audioCtx.destination);
+            
+            noise.start(startTime);
+        }
+        
+        function createSnare(startTime) {
+            // Noise part
+            const bufferSize = audioCtx.sampleRate * 0.15;
+            const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+            const data = buffer.getChannelData(0);
+            
+            for (let i = 0; i < bufferSize; i++) {
+                data[i] = Math.random() * 2 - 1;
+            }
+            
+            const noise = audioCtx.createBufferSource();
+            const noiseFilter = audioCtx.createBiquadFilter();
+            const noiseGain = audioCtx.createGain();
+            
+            noise.buffer = buffer;
+            noiseFilter.type = 'bandpass';
+            noiseFilter.frequency.value = 3000;
+            
+            noiseGain.gain.setValueAtTime(0.3, startTime);
+            noiseGain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.15);
+            
+            noise.connect(noiseFilter);
+            noiseFilter.connect(noiseGain);
+            noiseGain.connect(audioCtx.destination);
+            
+            noise.start(startTime);
+            
+            // Tone part
+            const osc = audioCtx.createOscillator();
+            const oscGain = audioCtx.createGain();
+            
+            osc.type = 'triangle';
+            osc.frequency.value = 200;
+            
+            oscGain.gain.setValueAtTime(0.3, startTime);
+            oscGain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.1);
+            
+            osc.connect(oscGain);
+            oscGain.connect(audioCtx.destination);
+            
+            osc.start(startTime);
+            osc.stop(startTime + 0.15);
+        }
+        
+        const loopLength = 16 * beatTime;
+        
+        function scheduleLoop() {
+            const currentTime = audioCtx.currentTime;
+            
+            // Melody (square wave - classic 8-bit)
+            melody.forEach(n => {
+                createOscillator(notes[n.note], 'square', currentTime + n.start * beatTime, n.duration * beatTime, 0.08);
+            });
+            
+            // Bass (sawtooth for that acid techno feel)
+            for (let bar = 0; bar < 4; bar++) {
+                bassPattern.forEach(n => {
+                    createOscillator(notes[n.note], 'sawtooth', currentTime + (bar * 4 + n.start) * beatTime, n.duration * beatTime, 0.15);
+                });
+            }
+            
+            // Kick drum - four on the floor
+            kickPattern.forEach(beat => {
+                createKick(currentTime + beat * beatTime);
+            });
+            
+            // Snare on 2 and 4
+            [2, 6, 10, 14].forEach(beat => {
+                createSnare(currentTime + beat * beatTime);
+            });
+            
+            // Closed hi-hats
+            hihatPattern.forEach(beat => {
+                createHihat(currentTime + beat * beatTime, false);
+            });
+            
+            // Open hi-hat accents
+            openHatPattern.forEach(beat => {
+                createHihat(currentTime + (beat + 0.75) * beatTime, true);
+            });
+            
+            // Fast arpeggio
+            for (let i = 0; i < 64; i++) {
+                const noteIdx = i % 4;
+                createOscillator(notes[arpNotes[noteIdx]], 'square', currentTime + i * beatTime * 0.25, beatTime * 0.2, 0.04);
+            }
+            
+            setTimeout(scheduleLoop, loopLength * 1000 - 100);
+        }
+        
+        scheduleLoop();
+    }
+    
+    let currentEffect = 0;
+    const effectDuration = 6;
+    
+    function render() {
+        time += 0.016;
+        
+        const effectTime = time % (effectDuration * 3);
+        
+        ctx.fillStyle = '#000011';
+        ctx.fillRect(0, 0, width, height);
+        
+        drawPlasmaBackground();
+        
+        if (effectTime < effectDuration) {
+            drawStarfield();
+            drawSanta();
+        } else if (effectTime < effectDuration * 2) {
+            drawBigBanner();
+        } else {
+            drawStarfield();
+            drawSanta();
+            drawBigBanner();
+        }
+        
+        drawSnowflakes();
+        drawSineScroller();
+        
+        // Credits at top
+        ctx.save();
+        ctx.font = '16px "Press Start 2P", cursive';
+        ctx.fillStyle = colors.gold;
+        ctx.textAlign = 'center';
+        ctx.shadowColor = colors.gold;
+        ctx.shadowBlur = 10;
+        ctx.fillText('★ POSEIDON DEMO ★ CHRISTMAS 2025 ★', width / 2, 40);
+        ctx.restore();
+        
+        requestAnimationFrame(render);
+    }
+    
+    startScreen.addEventListener('click', () => {
+        startScreen.style.display = 'none';
+        initAudio();
+    });
+    
+    window.addEventListener('resize', () => {
+        resize();
+        initSnowflakes();
+    });
+    
+    resize();
+    initSnowflakes();
+    render();
+</script>
+```
+
+</body>
+</html>
