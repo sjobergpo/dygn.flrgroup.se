@@ -98,7 +98,7 @@
 </head>
 <body>
     <div id="startScreen">
-        <h1>★ POSEIDON ★<br>CHRISTMAS DEMO 2025</h1>
+        <h1>★ CHRISTMAS 2025 ★</h1>
         <div class="presents">- presents -</div>
         <p>[ CLICK TO START ]</p>
     </div>
@@ -118,7 +118,7 @@
     
     // Snowflakes
     const snowflakes = [];
-    const snowChars = ['*', '❄', '✦', '·', '•', '°', '✧'];
+    const snowChars = ['*', '❄', '✦', '·', '•', '°', '✧', 'OGG','☃'];
     
     // Large ASCII Banner
     const bannerText = "HAPPY HOLIDAYS FROM OUR FAMILY TO YOURS // POSEIDON";
@@ -611,7 +611,7 @@
         const charSize = 14;
 
         // Cycle through animation frames every 0.5 seconds
-        const frameInterval = 0.5;
+        const frameInterval = 1;
         currentSantaFrame = Math.floor(time / frameInterval) % 4;
         const currentSanta = santaAnimation[currentSantaFrame];
 
@@ -648,7 +648,7 @@
 
         let hoText = "H0 H0 H0!";
         if (currentSantaFrame === 2) {
-            hoText = "H0 H0 H0! SANTA IS HERE!";
+            hoText = "SANT CLOUD IS HERE!";
         } else if (currentSantaFrame === 3) {
             hoText = "MERRY CHRISTMAS!";
         }
@@ -942,7 +942,7 @@
         ctx.textAlign = 'center';
         ctx.shadowColor = colors.gold;
         ctx.shadowBlur = 10;
-        ctx.fillText('★ POSEIDON DEMO ★ CHRISTMAS 2025 ★', width / 2, 40);
+        ctx.fillText('★ CHRISTMAS 2025 ★', width / 2, 40);
         ctx.restore();
         
         requestAnimationFrame(render);
